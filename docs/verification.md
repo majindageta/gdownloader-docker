@@ -47,7 +47,7 @@ La GUI Swing originale è stata aperta in un browser tramite noVNC. Sono stati o
 
 È stata acquisita una schermata temporanea, non inclusa nel repository.
 
-Il campo Clipboard di noVNC ha accettato il testo durante l'automazione, ma il passaggio alla clipboard X11 non è risultato osservabile con eventi sintetici del browser. Per completare il collaudo applicativo l'URL è stato quindi impostato nella clipboard X11 della stessa sessione e acquisito tramite il pulsante `+` della GUI. Questo punto resta da riconfermare manualmente con una normale operazione di incolla da un browser LAN; non viene registrato come esito positivo automatico.
+Il campo Clipboard di noVNC ha accettato il testo durante l'automazione. Gli eventi sintetici del browser non hanno prodotto un trasferimento osservabile, quindi il trasporto è stato verificato indipendentemente attraverso lo stesso endpoint WebSocket `/websockify`: il messaggio RFB `ClientCutText` contenente `gdownloader-novnc-clipboard-proof-20260811` è stato letto identico dalla clipboard X11 della sessione. Il percorso noVNC/TigerVNC della clipboard è pertanto risultato operativo. Per completare il collaudo applicativo l'URL del media è stato impostato nella clipboard X11 e acquisito tramite il pulsante `+` della GUI.
 
 ## Download autorizzato
 
@@ -92,6 +92,8 @@ docker inspect gdownloader-verification --format '{{.State.Health.Status}}'
 docker exec gdownloader-verification jq -e . /config/config.json
 docker exec gdownloader-verification /opt/base/sbin/su-exec app sh -c ': > /output/.recreate-write-test'
 docker image inspect gdownloader-docker:1.7.8-1
+python3 /tmp/gdownloader-vnc-clipboard-test.py
+docker exec -u app -e DISPLAY=:0 gdownloader-verification xclip -selection clipboard -t UTF8_STRING -o
 ```
 
 La suite completa `bash tests/run.sh` è stata eseguita immediatamente prima del commit di questo documento ed è terminata con stato `0`. Il messaggio `Directory is not writable by app: /output` emesso in chiusura è l'esito atteso del caso negativo che verifica il rifiuto di un volume non scrivibile.
