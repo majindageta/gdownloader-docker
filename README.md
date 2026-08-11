@@ -4,6 +4,15 @@ Immagine Docker non ufficiale di [GDownloader](https://github.com/hstr0100/GDown
 
 Questa è un'immagine *fixed*: applicazione e dipendenze vengono aggiornate ricostruendo e ricreando l'immagine. GDownloader non si aggiorna automaticamente dentro il container.
 
+## Documentazione del progetto
+
+- [Architettura](docs/architecture.md): build, avvio, GUI, persistenza e confini del sistema.
+- [Glossario](docs/glossary.md): vocabolario canonico usato nel repository.
+- [Manutenzione](docs/maintenance.md): aggiornamento di componenti, checksum, test, deployment e rollback.
+- [Verifica end-to-end](docs/verification.md): evidenze raccolte sull'immagine corrente.
+
+Gli agenti che modificano il repository devono iniziare da [AGENTS.md](AGENTS.md).
+
 ## Requisiti operativi
 
 Per eseguire il container occorre scegliere soltanto:

@@ -54,3 +54,37 @@ for term in \
   '## Smoke test'; do
   grep -F "$term" "$repo_dir/docs/glossary.md"
 done
+
+[[ -s "$repo_dir/docs/maintenance.md" ]] || { echo 'Missing docs/maintenance.md' >&2; exit 1; }
+
+for reference in \
+  'docs/architecture.md' \
+  'docs/glossary.md' \
+  'docs/maintenance.md' \
+  'docs/verification.md'; do
+  grep -F "$reference" "$repo_dir/README.md"
+done
+
+for requirement in \
+  versions.env \
+  linux/amd64 \
+  sha256sum \
+  scripts/build.sh \
+  tests/run.sh \
+  THIRD_PARTY_NOTICES.md \
+  /config \
+  /output \
+  rollback; do
+  grep -Fi "$requirement" "$repo_dir/docs/maintenance.md"
+done
+
+for component in GDownloader yt-dlp Deno FFmpeg jlesage; do
+  grep -F "$component" "$repo_dir/docs/maintenance.md"
+done
+
+for file in AGENTS.md docs/architecture.md docs/glossary.md docs/maintenance.md; do
+  if rg -n '\b(TO[D]O|TB[D]|FIX[M]E)\b' "$repo_dir/$file"; then
+    echo "Incomplete marker found in $file" >&2
+    exit 1
+  fi
+done
