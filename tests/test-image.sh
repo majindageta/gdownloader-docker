@@ -12,6 +12,8 @@ docker image inspect "$image" >/dev/null
 docker run --rm --entrypoint /bin/sh "$image" -ec '
   test -x /opt/gdownloader/bin/GDownloader
   test ! -e /opt/gdownloader/lib/runtime/portable.lock
+  test -s /usr/share/doc/gdownloader-docker/LICENSE
+  test -s /usr/share/doc/gdownloader-docker/THIRD_PARTY_NOTICES.md
   grep -F "java-options=-Duser.home=/opt/gdownloader-home" /opt/gdownloader/lib/app/GDownloader.cfg
   command -v yt-dlp deno ffmpeg ffprobe
   ! command -v gallery-dl

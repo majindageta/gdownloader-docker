@@ -1,0 +1,10 @@
+services:
+  gdownloader:
+    image: gdownloader-docker:1.7.8-1
+    container_name: gdownloader
+    ports:
+      - "5800:5800"
+    volumes:
+      - /docker/appdata/gdownloader:/config:rw
+      - /home/user/Downloads:/output:rw
+    restart: unless-stopped

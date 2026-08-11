@@ -40,6 +40,7 @@ RUN add-pkg ca-certificates curl ffmpeg fonts-dejavu-core jq libxinerama1 libxkb
 
 COPY defaults/config.json /defaults/gdownloader/config.json
 COPY rootfs/ /
+COPY LICENSE THIRD_PARTY_NOTICES.md /usr/share/doc/gdownloader-docker/
 
 RUN chmod 0755 /startapp.sh /etc/cont-init.d/55-gdownloader.sh \
       /usr/local/lib/gdownloader/bootstrap.sh && \
