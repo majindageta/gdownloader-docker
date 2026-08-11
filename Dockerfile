@@ -11,7 +11,7 @@ ARG DENO_SHA256
 
 WORKDIR /config
 
-RUN add-pkg ca-certificates curl ffmpeg fonts-dejavu-core jq libxkbcommon-x11-0 unzip && \
+RUN add-pkg ca-certificates curl ffmpeg fonts-dejavu-core jq libxinerama1 libxkbcommon-x11-0 libxt6 libxtst6 unzip && \
     mkdir -p /opt/gdownloader /opt/gdownloader-home /defaults/gdownloader && \
     ln -s /config /opt/gdownloader-home/.gdownloader && \
     curl -fsSL -o /tmp/gdownloader.zip \
