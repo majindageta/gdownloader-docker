@@ -30,3 +30,27 @@ done
 for heading in 'Pipeline di build' 'Sequenza di avvio' 'Persistenza' 'Rete e sicurezza' 'Confini intenzionali'; do
   grep -F "## $heading" "$repo_dir/docs/architecture.md"
 done
+
+[[ -s "$repo_dir/docs/glossary.md" ]] || { echo 'Missing docs/glossary.md' >&2; exit 1; }
+for term in \
+  '## Upstream' \
+  '## Immagine fixed' \
+  '## Portable mode' \
+  '## Base image jlesage' \
+  '## noVNC' \
+  '## Desktop virtuale' \
+  '## Bootstrap' \
+  '## Config seed' \
+  '## Stato persistente' \
+  '## Bind mount' \
+  '## Volume' \
+  '## `/config`' \
+  '## `/output`' \
+  '## Eseguibile di sistema' \
+  '## Pin' \
+  '## Checksum SHA-256' \
+  '## Image revision' \
+  '## Health check' \
+  '## Smoke test'; do
+  grep -F "$term" "$repo_dir/docs/glossary.md"
+done
