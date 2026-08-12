@@ -56,5 +56,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
 
 LABEL org.opencontainers.image.title="GDownloader" \
       org.opencontainers.image.description="Unofficial browser-accessible Docker image for GDownloader" \
-      org.opencontainers.image.source="https://github.com/hstr0100/GDownloader" \
+      org.opencontainers.image.source="https://github.com/majindageta/gdownloader-docker" \
+      org.opencontainers.image.url="https://github.com/majindageta/gdownloader-docker" \
+      org.opencontainers.image.licenses="GPL-3.0-only" \
       org.opencontainers.image.version="${GDOWNLOADER_VERSION}-${CONTAINER_REVISION}"

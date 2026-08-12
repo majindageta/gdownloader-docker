@@ -184,6 +184,23 @@ docker compose up -d --force-recreate
 
 Verify health, logs, and the GUI before removing the previous image. Persistent data must not be copied into the image or replaced during deployment.
 
+## Publishing a Stable Image
+
+Stable images are published by [the GitHub Actions workflow](../.github/workflows/publish-docker.yml), not by an ordinary push to `main`. Before publishing, ensure the GitHub repository has variable `DOCKERHUB_USERNAME` set to `majindageta` and secret `DOCKERHUB_TOKEN` set to a dedicated Docker Hub token with Read & Write permission. Never store that token in this repository.
+
+Use this release sequence:
+
+1. update pins, checksums, notices, tests, and documentation on a branch;
+2. run `bash tests/run.sh` and `git diff --check`;
+3. merge the verified commit into `main` and push it;
+4. source `versions.env` and derive `release_version="${GDOWNLOADER_VERSION}-${CONTAINER_REVISION}"`;
+5. create GitHub tag `v${release_version}` on the verified `main` commit;
+6. publish the GitHub Release for that tag once;
+7. wait for the **Publish Docker image** workflow to succeed;
+8. verify `majindageta/gdownloader-docker:${release_version}` and `majindageta/gdownloader-docker:latest` resolve to the same digest and report `linux/amd64`.
+
+The workflow rejects a tag that does not match `versions.env`, tests the loaded image before registry login, and pushes only the versioned tag plus `latest`. Do not recover from a failed release by moving or overwriting an existing stable tag; correct the repository and publish a new release version.
+
 ## Rollback
 
 Keep the previous image tag at least until verification is complete. If a regression occurs:

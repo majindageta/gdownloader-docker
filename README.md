@@ -33,6 +33,8 @@ From a checkout of this repository:
 
 The build reads `versions.env`, verifies artifact checksums, and produces `gdownloader-docker:1.7.8-1` for `linux/amd64`.
 
+Stable images are also published on [Docker Hub](https://hub.docker.com/r/majindageta/gdownloader-docker). The current stable image corresponds to GitHub Release `v1.7.8-1`.
+
 ## Running with Docker
 
 Adjust both host paths and, if necessary, the number to the left of `5800:5800`:
@@ -44,7 +46,7 @@ docker run -d \
     -v /docker/appdata/gdownloader:/config:rw \
     -v /home/user/Downloads:/output:rw \
     --restart unless-stopped \
-    gdownloader-docker:1.7.8-1
+    majindageta/gdownloader-docker:1.7.8-1
 ```
 
 Open `http://<SERVER-IP>:5800`. To use host port 8080, for example, change the mapping to `-p 8080:5800` and open `http://<SERVER-IP>:8080`.
@@ -56,7 +58,7 @@ The [compose.yaml](compose.yaml) file contains the minimal configuration:
 ```yaml
 services:
   gdownloader:
-    image: gdownloader-docker:1.7.8-1
+    image: majindageta/gdownloader-docker:1.7.8-1
     container_name: gdownloader
     ports:
       - "5800:5800"
@@ -74,12 +76,12 @@ docker compose up -d
 
 ## Portainer Stack
 
-1. Make the `gdownloader-docker:1.7.8-1` image available on the Docker node by building it with `./scripts/build.sh` or loading it from a private registry.
+1. Confirm that the Docker node can pull `majindageta/gdownloader-docker:1.7.8-1` from Docker Hub.
 2. In Portainer, open **Stacks**, select **Add stack**, and paste the contents of `compose.yaml` into the Web editor.
 3. You must adjust the host port, `/config` path, and `/output` path for your server.
 4. Select **Deploy the stack** and open `http://<SERVER-IP>:5800`.
 
-Portainer does not automatically build this image from the Compose file alone: the referenced tag must already exist on the node or be available from a reachable registry.
+Portainer pulls the referenced versioned tag from Docker Hub when it is not already present on the node.
 
 ## Optional Variables
 
@@ -121,6 +123,17 @@ docker compose up -d --force-recreate
 ```
 
 The absence of automatic updates is an intentional limitation of the first version: dependencies and GDownloader remain reproducible and change only with a new image.
+
+## Publishing a Stable Release
+
+This section is for repository maintainers. GitHub Actions publishes an image only when a GitHub Release is published. The release tag must exactly match the version in `versions.env`: `GDOWNLOADER_VERSION=1.7.8` and `CONTAINER_REVISION=1` require GitHub tag `v1.7.8-1`.
+
+Configure these repository settings under **Settings → Secrets and variables → Actions** before the first release:
+
+- variable `DOCKERHUB_USERNAME` with value `majindageta`;
+- secret `DOCKERHUB_TOKEN` containing a dedicated Docker Hub access token with Read & Write permission.
+
+Never commit the Docker Hub token or place it in a workflow file. After the complete test suite passes and the changes are on `main`, publish the matching GitHub Release. The workflow tests the built image before authenticating and then publishes both `majindageta/gdownloader-docker:1.7.8-1` and `majindageta/gdownloader-docker:latest`.
 
 ## Security
 

@@ -1,6 +1,6 @@
 services:
   gdownloader:
-    image: gdownloader-docker:1.7.8-1
+    image: majindageta/gdownloader-docker:1.7.8-1
     container_name: gdownloader
     ports:
       - "5800:5800"
