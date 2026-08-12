@@ -1,29 +1,29 @@
-# Verifica end-to-end
+# End-to-End Verification
 
-Data della verifica: 11 agosto 2026.
+Verification date: August 11, 2026.
 
-## Ambiente
+## Environment
 
-- Host: macOS `arm64` con Docker Desktop.
+- Host: macOS `arm64` with Docker Desktop.
 - Docker client/server: `20.10.22/arm64`.
-- Immagine verificata: `gdownloader-docker:1.7.8-1`.
+- Verified image: `gdownloader-docker:1.7.8-1`.
 - Image ID: `sha256:585cae5dfaec8a42d46351e0e28bb0a20298a93c25ec71a1e50b3a5928e79f8b`.
-- Architettura dichiarata dall'immagine: `amd64`.
-- Architettura osservata nel container: `x86_64` (emulazione Docker Desktop).
-- Health check configurato: richiesta HTTP a `127.0.0.1:5800`, intervallo 30 s, timeout 5 s, 3 tentativi, start period 30 s.
+- Image-declared architecture: `amd64`.
+- Architecture observed in the container: `x86_64` (Docker Desktop emulation).
+- Configured health check: HTTP request to `127.0.0.1:5800`, 30 s interval, 5 s timeout, 3 retries, 30 s start period.
 
-Il container è stato pubblicato esclusivamente su `127.0.0.1:5800` e avviato con due bind mount separati:
+The container was published exclusively on `127.0.0.1:5800` and started with two separate bind mounts:
 
 ```text
 /tmp/gdownloader-verification.9hjQEU/config -> /config
 /tmp/gdownloader-verification.9hjQEU/output -> /output
 ```
 
-I dati di verifica sono stati conservati nel percorso host indicato sopra; il container `gdownloader-verification` è stato rimosso al termine.
+Verification data was retained at the host path shown above; the `gdownloader-verification` container was removed afterward.
 
-## Componenti osservati
+## Observed Components
 
-Il file `/opt/gdownloader/COMPONENTS` nell'immagine riporta:
+The image's `/opt/gdownloader/COMPONENTS` file reports:
 
 ```text
 GDownloader 1.7.8
@@ -32,59 +32,59 @@ deno 2.9.5 (stable, release, x86_64-unknown-linux-gnu)
 ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers
 ```
 
-Durante l'avvio GDownloader ha individuato `/usr/local/bin/yt-dlp`, `/usr/local/bin/deno` e `/usr/bin/ffmpeg`. I log hanno inoltre confermato aggiornamenti automatici disabilitati e updater di gallery-dl e spotDL non supportati/assenti.
+During startup, GDownloader found `/usr/local/bin/yt-dlp`, `/usr/local/bin/deno`, and `/usr/bin/ffmpeg`. Logs also confirmed disabled automatic updates and unsupported/absent gallery-dl and spotDL updaters.
 
-## Verifica della GUI
+## GUI Verification
 
-La GUI Swing originale è stata aperta in un browser tramite noVNC. Sono stati osservati:
+The original Swing GUI was opened in a browser through noVNC. The following were observed:
 
-- titolo `GDownloader v1.7.8`;
-- assenza della procedura guidata iniziale;
-- directory di download `/output`;
-- aggiornamenti automatici disabilitati;
-- gallery-dl e spotDL disabilitati;
-- stato finale del download `Complete`.
+- title `GDownloader v1.7.8`;
+- no initial setup wizard;
+- download directory `/output`;
+- automatic updates disabled;
+- gallery-dl and spotDL disabled;
+- final download status `Complete`.
 
-È stata acquisita una schermata temporanea, non inclusa nel repository.
+A temporary screenshot was captured but is not included in the repository.
 
-Il campo Clipboard di noVNC ha accettato il testo durante l'automazione. Gli eventi sintetici del browser non hanno prodotto un trasferimento osservabile, quindi il trasporto è stato verificato indipendentemente attraverso lo stesso endpoint WebSocket `/websockify`: il messaggio RFB `ClientCutText` contenente `gdownloader-novnc-clipboard-proof-20260811` è stato letto identico dalla clipboard X11 della sessione. Il percorso noVNC/TigerVNC della clipboard è pertanto risultato operativo. Per completare il collaudo applicativo l'URL del media è stato impostato nella clipboard X11 e acquisito tramite il pulsante `+` della GUI.
+The noVNC Clipboard field accepted text during automation. Synthetic browser events did not produce an observable transfer, so transport was verified independently through the same `/websockify` WebSocket endpoint: the RFB `ClientCutText` message containing `gdownloader-novnc-clipboard-proof-20260811` was read unchanged from the session's X11 clipboard. The noVNC/TigerVNC clipboard path was therefore operational. To complete application acceptance, the media URL was set in the X11 clipboard and captured through the GUI's `+` button.
 
-## Download autorizzato
+## Authorized Download
 
-Il video yt-dlp indicato nel piano, `https://www.youtube.com/watch?v=BaW_jenozKc`, il giorno della verifica restituiva `Video unavailable` anche invocando direttamente la versione yt-dlp inclusa. Non è stato considerato un test superato.
+On the verification date, the yt-dlp video specified in the plan, `https://www.youtube.com/watch?v=BaW_jenozKc`, returned `Video unavailable` even when invoked directly with the included yt-dlp version. It was not counted as a passing test.
 
-Come alternativa autorizzata è stato generato con FFmpeg un media locale di due secondi, 320x180, pubblicato temporaneamente dal solo container all'URL:
+As an authorized alternative, FFmpeg generated a local two-second 320x180 media file, temporarily served only by the container at:
 
 ```text
 http://127.0.0.1:5800/verification-sample.mp4
 ```
 
-L'URL è stato aggiunto e avviato dalla GUI. Il flusso ha attraversato gli stati `Queued`, `Transcoding` e `Complete`, producendo:
+The URL was added and started through the GUI. The flow passed through `Queued`, `Transcoding`, and `Complete`, producing:
 
 ```text
 /output/verification-sample (320kbps).mp3  83735 byte
 /output/verification-sample (NA).mp4       26795 byte
 ```
 
-Prima della ricreazione entrambi i file risultavano `uid=1000`, `gid=1000`, modalità `-rw-r--r--` dal container.
+Before recreation, both files were reported by the container as `uid=1000`, `gid=1000`, mode `-rw-r--r--`.
 
-## Ricreazione e persistenza
+## Recreation and Persistence
 
-Il container è stato fermato, rimosso e ricreato dalla stessa immagine usando gli stessi mount. Dopo il nuovo avvio sono stati osservati:
+The container was stopped, removed, and recreated from the same image using the same mounts. After the new startup, the following were observed:
 
-- endpoint HTTP nuovamente raggiungibile;
-- stato Docker `running` e `healthy`;
-- configurazione ancora impostata su `/output`, aggiornamenti automatici disabilitati, gallery-dl e spotDL disabilitati;
-- log `Successfully restored 1 downloads`;
-- voce completata nuovamente visibile nella GUI;
-- entrambi i file ancora presenti in `/output` con le stesse dimensioni;
-- utente applicativo `uid=1000(app) gid=1000(app)` e prova di scrittura in `/output` riuscita con file `1000:1000`.
+- the HTTP endpoint was reachable again;
+- Docker status was `running` and `healthy`;
+- configuration still pointed to `/output`, with automatic updates, gallery-dl, and spotDL disabled;
+- log entry `Successfully restored 1 downloads`;
+- the completed entry was visible in the GUI again;
+- both files remained in `/output` with the same sizes;
+- application user `uid=1000(app) gid=1000(app)` and a successful `/output` write test producing a `1000:1000` file.
 
-Docker Desktop su macOS ha rimappato i due file preesistenti a `0:0` alla successiva esposizione del bind mount nel container. Directory persistenti e nuovi file creati come utente `app` risultavano invece `1000:1000`. Il test automatico applica per questo motivo l'asserzione numerica sui file persistiti soltanto su host Docker Linux nativi.
+Docker Desktop on macOS remapped the two existing files to `0:0` when the bind mount was next exposed inside the container. Persistent directories and new files created as `app` were instead `1000:1000`. For this reason, the automated test applies the numeric assertion to persisted files only on native Linux Docker hosts.
 
-## Comandi verificati
+## Verified Commands
 
-I seguenti controlli hanno restituito stato 0 nell'ambiente descritto:
+The following checks returned status 0 in the described environment:
 
 ```text
 curl -fsS http://127.0.0.1:5800/
@@ -96,4 +96,4 @@ python3 /tmp/gdownloader-vnc-clipboard-test.py
 docker exec -u app -e DISPLAY=:0 gdownloader-verification xclip -selection clipboard -t UTF8_STRING -o
 ```
 
-La suite completa `bash tests/run.sh` è stata eseguita immediatamente prima del commit di questo documento ed è terminata con stato `0`. Il messaggio `Directory is not writable by app: /output` emesso in chiusura è l'esito atteso del caso negativo che verifica il rifiuto di un volume non scrivibile.
+The complete `bash tests/run.sh` suite was run immediately before this document was committed and exited with status `0`. The final `Directory is not writable by app: /output` message is the expected outcome of the negative case that verifies rejection of an unwritable volume.

@@ -1,59 +1,59 @@
-# Contesto per agenti
+# Agent Context
 
-## Scopo
+## Purpose
 
-Questo repository costruisce un'immagine Docker non ufficiale, fixed e riproducibile di GDownloader. La GUI Swing originale viene resa accessibile dal browser tramite noVNC; non esiste una UI web alternativa sviluppata in questo progetto.
+This repository builds an unofficial, fixed, and reproducible Docker image for GDownloader. The original Swing GUI is made accessible from a browser through noVNC; this project does not provide an alternative web UI.
 
-## Letture per attività
+## Reading by Task
 
-| Attività | Leggere prima |
+| Task | Read First |
 | --- | --- |
-| Modifiche a build, runtime, mount o GUI | `docs/architecture.md` |
-| Terminologia o nomi dei componenti | `docs/glossary.md` |
-| Aggiornamento di GDownloader o dipendenze | `docs/maintenance.md` |
-| Evidenze dell'immagine corrente | `docs/verification.md` |
-| Installazione Docker o Portainer | `README.md` |
+| Build, runtime, mount, or GUI changes | `docs/architecture.md` |
+| Terminology or component names | `docs/glossary.md` |
+| Updating GDownloader or dependencies | `docs/maintenance.md` |
+| Evidence for the current image | `docs/verification.md` |
+| Docker or Portainer installation | `README.md` |
 
-Le specifiche e i piani in `docs/superpowers/` descrivono la storia progettuale. Non sostituiscono i documenti operativi sopra indicati.
+The specifications and plans under `docs/superpowers/` describe the project's design history. They do not replace the operational documents listed above.
 
-## Vincoli non negoziabili
+## Non-Negotiable Constraints
 
-- Il target è esclusivamente `linux/amd64`; non aggiungere supporto ARM.
-- La GUI Swing originale resta accessibile tramite noVNC sulla porta interna `5800`.
-- L'immagine è fixed: gli aggiornamenti richiedono rebuild e ricreazione del container.
-- I componenti inclusi sono GDownloader, yt-dlp, Deno, FFmpeg e ffprobe.
-- gallery-dl e spotDL non devono essere installati e restano disabilitati.
-- Persistono soltanto `/config` e `/output`; non aggiungere un volume temp.
-- Non pubblicare la porta VNC `5900` per default.
-- La UI senza autenticazione è destinata soltanto a una rete locale fidata.
-- Non sovrascrivere un `/config/config.json` valido già esistente.
-- Gli aggiornamenti automatici restano disabilitati.
-- Le variabili runtime restano opzionali e compatibili con i default jlesage.
+- The target is exclusively `linux/amd64`; do not add ARM support.
+- The original Swing GUI remains accessible through noVNC on internal port `5800`.
+- The image is fixed: updates require rebuilding the image and recreating the container.
+- Included components are GDownloader, yt-dlp, Deno, FFmpeg, and ffprobe.
+- gallery-dl and spotDL must not be installed and remain disabled.
+- Only `/config` and `/output` persist; do not add a temporary volume.
+- Do not publish VNC port `5900` by default.
+- The unauthenticated UI is intended only for a trusted local network.
+- Do not overwrite an existing valid `/config/config.json`.
+- Automatic updates remain disabled.
+- Runtime variables remain optional and compatible with jlesage defaults.
 
-ARM, auto-update nel container, autenticazione integrata, nuovi downloader, ulteriori volumi o patch al codice Java upstream richiedono una nuova decisione progettuale esplicita.
+ARM support, in-container automatic updates, integrated authentication, new downloaders, additional volumes, or patches to the upstream Java code require a new explicit design decision.
 
-## Fonti autorevoli
+## Authoritative Sources
 
-- `versions.env`: versioni, image revision e checksum.
-- `Dockerfile` e `scripts/build.sh`: composizione e build dell'immagine.
-- `defaults/config.json`: configurazione iniziale.
-- `rootfs/etc/cont-init.d/55-gdownloader.sh`: inizializzazione dei mount.
-- `rootfs/usr/local/lib/gdownloader/bootstrap.sh`: preparazione dello stato.
-- `rootfs/startapp.sh`: avvio della GUI.
-- `compose.yaml`: contratto minimo di deployment.
-- `tests/` e `docs/verification.md`: comportamento verificato.
-- `LICENSE` e `THIRD_PARTY_NOTICES.md`: licenze dei componenti distribuiti.
+- `versions.env`: versions, image revision, and checksums.
+- `Dockerfile` and `scripts/build.sh`: image composition and build.
+- `defaults/config.json`: initial configuration.
+- `rootfs/etc/cont-init.d/55-gdownloader.sh`: mount initialization.
+- `rootfs/usr/local/lib/gdownloader/bootstrap.sh`: state preparation.
+- `rootfs/startapp.sh`: GUI startup.
+- `compose.yaml`: minimal deployment contract.
+- `tests/` and `docs/verification.md`: verified behavior.
+- `LICENSE` and `THIRD_PARTY_NOTICES.md`: licenses for distributed components.
 
-## Flusso di lavoro
+## Workflow
 
-1. Leggere questo file e il documento specialistico pertinente.
-2. Controllare i file autorevoli prima di modificare esempi o spiegazioni.
-3. Scrivere o aggiornare prima il test che rappresenta il contratto modificato.
-4. Preservare le modifiche dell'utente e limitare il cambiamento allo scopo richiesto.
-5. Eseguire il test mirato, poi `bash tests/run.sh` prima di dichiarare il lavoro completo.
-6. Eseguire `git diff --check` e controllare `git status --short` prima del commit.
+1. Read this file and the relevant specialist document.
+2. Check authoritative files before changing examples or explanations.
+3. Write or update the test that represents the changed contract first.
+4. Preserve user changes and limit the change to the requested scope.
+5. Run the focused test, then `bash tests/run.sh` before declaring the work complete.
+6. Run `git diff --check` and inspect `git status --short` before committing.
 
-## Comandi essenziali
+## Essential Commands
 
 ```bash
 ./scripts/build.sh --dry-run

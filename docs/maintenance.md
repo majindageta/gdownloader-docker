@@ -1,47 +1,47 @@
-# Manutenzione e aggiornamenti
+# Maintenance and Updates
 
-Questa procedura aggiorna i componenti dell'immagine senza introdurre auto-update nel container. [`versions.env`](../versions.env) è la fonte autorevole per pin, image revision e checksum: i comandi sotto leggono quel file e non duplicano versioni correnti nella documentazione.
+This procedure updates image components without introducing in-container automatic updates. [`versions.env`](../versions.env) is the authoritative source for pins, image revision, and checksums: the commands below read that file instead of duplicating current versions in the documentation.
 
-## Ambito e prerequisiti
+## Scope and Prerequisites
 
-Servono Docker con supporto alla build `linux/amd64`, `curl`, Git e uno strumento SHA-256. Su Linux usare `sha256sum`; su macOS, se `sha256sum` non è installato, usare `shasum -a 256`.
+You need Docker with `linux/amd64` build support, `curl`, Git, and a SHA-256 tool. Use `sha256sum` on Linux; on macOS, use `shasum -a 256` if `sha256sum` is not installed.
 
-Prima di iniziare:
+Before starting:
 
-1. creare una branch dedicata e verificare che il worktree sia pulito;
-2. leggere [`AGENTS.md`](../AGENTS.md) e [`architecture.md`](architecture.md);
-3. annotare il tag immagine attualmente in produzione;
-4. assicurarsi che l'immagine precedente sia ancora disponibile localmente o nel registry;
-5. fermare il container e fare un backup coerente della cartella host montata in `/config`;
-6. non spostare, cancellare o riutilizzare per altri scopi la cartella host montata in `/output`.
+1. create a dedicated branch and verify that the worktree is clean;
+2. read [`AGENTS.md`](../AGENTS.md) and [`architecture.md`](architecture.md);
+3. record the image tag currently in production;
+4. ensure that the previous image is still available locally or in the registry;
+5. stop the container and make a consistent backup of the host directory mounted at `/config`;
+6. do not move, delete, or repurpose the host directory mounted at `/output`.
 
-Un aggiornamento non cambia il target: tutti gli artefatti devono restare compatibili con `linux/amd64`.
+An update does not change the target: all artifacts must remain compatible with `linux/amd64`.
 
-## Fonti ammesse
+## Approved Sources
 
-Usare soltanto release e distribuzioni ufficiali:
+Use only official releases and distributions:
 
 - [GDownloader releases](https://github.com/hstr0100/GDownloader/releases);
 - [yt-dlp releases](https://github.com/yt-dlp/yt-dlp/releases);
 - [Deno releases](https://github.com/denoland/deno/releases);
 - [jlesage/docker-baseimage-gui releases](https://github.com/jlesage/docker-baseimage-gui/releases);
-- repository Ubuntu configurati dalla base jlesage per FFmpeg e ffprobe.
+- Ubuntu repositories configured by the jlesage base for FFmpeg and ffprobe.
 
-Non sostituire questi artefatti con mirror non verificati. Prima di cambiare un URL, confrontarlo con il [`Dockerfile`](../Dockerfile) e controllare che il nome dell'asset sia ancora quello pubblicato dall'upstream.
+Do not replace these artifacts with unverified mirrors. Before changing a URL, compare it with the [`Dockerfile`](../Dockerfile) and confirm that the asset name is still the one published upstream.
 
-## Preparare i nuovi pin
+## Preparing New Pins
 
-Caricare i valori correnti:
+Load the current values:
 
 ```bash
 source versions.env
 ```
 
-Scegliere una release stabile ufficiale per ciascun componente da aggiornare. Modificare soltanto le variabili pertinenti in `versions.env`, dopo aver scaricato e verificato l'asset corretto.
+Choose an official stable release for each component being updated. Change only the relevant variables in `versions.env` after downloading and verifying the correct asset.
 
 ### GDownloader
 
-L'asset previsto è lo ZIP portable amd64. Impostare temporaneamente `GDOWNLOADER_VERSION` alla release candidata oppure sostituire il valore nel comando:
+The expected asset is the portable amd64 ZIP. Temporarily set `GDOWNLOADER_VERSION` to the candidate release or substitute the value in the command:
 
 ```bash
 curl -fL -o /tmp/gdownloader.zip \
@@ -49,18 +49,18 @@ curl -fL -o /tmp/gdownloader.zip \
 sha256sum /tmp/gdownloader.zip
 ```
 
-Aggiornare `GDOWNLOADER_VERSION` e `GDOWNLOADER_SHA256`. Prima della build ispezionare lo ZIP e verificare che esistano ancora:
+Update `GDOWNLOADER_VERSION` and `GDOWNLOADER_SHA256`. Before building, inspect the ZIP and verify that it still contains:
 
 - `bin/GDownloader`;
 - `lib/runtime/portable.lock`;
 - `lib/app/GDownloader.cfg`;
-- l'icona `lib/GDownloader.png`.
+- the `lib/GDownloader.png` icon.
 
-Un cambiamento di questi percorsi richiede l'aggiornamento coordinato del Dockerfile e dei test. Controllare inoltre le release notes per cambiamenti al formato di configurazione o ai requisiti Java.
+A change to these paths requires coordinated updates to the Dockerfile and tests. Also review release notes for changes to the configuration format or Java requirements.
 
 ### yt-dlp
 
-L'asset ammesso è il binario Linux standalone per x86_64:
+The approved asset is the standalone Linux binary for x86_64:
 
 ```bash
 curl -fL -o /tmp/yt-dlp_linux \
@@ -68,11 +68,11 @@ curl -fL -o /tmp/yt-dlp_linux \
 sha256sum /tmp/yt-dlp_linux
 ```
 
-Aggiornare `YTDLP_VERSION` e `YTDLP_SHA256`. Dopo la build verificare che `/usr/local/bin/yt-dlp --version` restituisca esattamente la release scelta e che GDownloader registri l'eseguibile di sistema nei log.
+Update `YTDLP_VERSION` and `YTDLP_SHA256`. After building, verify that `/usr/local/bin/yt-dlp --version` returns exactly the selected release and that GDownloader records the system executable in its logs.
 
 ### Deno
 
-Usare esclusivamente l'archivio x86_64 GNU/Linux:
+Use only the x86_64 GNU/Linux archive:
 
 ```bash
 curl -fL -o /tmp/deno.zip \
@@ -80,13 +80,13 @@ curl -fL -o /tmp/deno.zip \
 sha256sum /tmp/deno.zip
 ```
 
-Aggiornare `DENO_VERSION` e `DENO_SHA256`. Dopo la build controllare `deno --version` e verificare che il runtime riporti `x86_64-unknown-linux-gnu`.
+Update `DENO_VERSION` and `DENO_SHA256`. After building, check `deno --version` and verify that the runtime reports `x86_64-unknown-linux-gnu`.
 
-### FFmpeg e ffprobe
+### FFmpeg and ffprobe
 
-FFmpeg e ffprobe non hanno un pin separato in `versions.env`: provengono dai pacchetti Ubuntu disponibili durante la build. La loro versione può cambiare aggiornando il tag `BASE_IMAGE` oppure quando i repository Ubuntu associati al tag forniscono un pacchetto diverso.
+FFmpeg and ffprobe do not have separate pins in `versions.env`: they come from the Ubuntu packages available during the build. Their versions may change when the `BASE_IMAGE` tag is updated or when the Ubuntu repositories associated with that tag provide a different package.
 
-Dopo ogni rebuild verificare entrambi:
+Verify both after every rebuild:
 
 ```bash
 source versions.env
@@ -95,49 +95,49 @@ docker run --rm --platform linux/amd64 --entrypoint ffmpeg "$image_tag" -version
 docker run --rm --platform linux/amd64 --entrypoint ffprobe "$image_tag" -version
 ```
 
-Controllare anche che GDownloader individui `/usr/bin/ffmpeg` e che un piccolo download con transcodifica completi correttamente.
+Also confirm that GDownloader finds `/usr/bin/ffmpeg` and that a small download requiring transcoding completes successfully.
 
-### Base image jlesage
+### jlesage Base Image
 
-Aggiornare `BASE_IMAGE` soltanto a un tag ufficiale jlesage basato su una versione Ubuntu compatibile. Leggere le release notes della base e verificare in particolare:
+Update `BASE_IMAGE` only to an official jlesage tag based on a compatible Ubuntu version. Read the base release notes and verify in particular:
 
-- sistema di init e ordine degli script `cont-init.d`;
-- disponibilità di `add-pkg`, `take-ownership` e `/opt/base/sbin/su-exec`;
-- variabili `USER_ID`, `GROUP_ID`, `UMASK`, `TZ` e dimensioni display;
-- Openbox, TigerVNC, noVNC, nginx e health check HTTP;
-- comportamento della clipboard WebSocket/VNC.
+- the init system and `cont-init.d` script order;
+- availability of `add-pkg`, `take-ownership`, and `/opt/base/sbin/su-exec`;
+- `USER_ID`, `GROUP_ID`, `UMASK`, `TZ`, and display-size variables;
+- Openbox, TigerVNC, noVNC, nginx, and the HTTP health check;
+- WebSocket/VNC clipboard behavior.
 
-Un cambio della base richiede sempre l'intera suite e l'accettazione GUI, anche se gli altri pin non cambiano.
+A base image change always requires the complete suite and GUI acceptance, even when other pins do not change.
 
-## Image revision
+## Image Revision
 
-`CONTAINER_REVISION` distingue revisioni del packaging che mantengono la stessa versione di GDownloader.
+`CONTAINER_REVISION` distinguishes packaging revisions that retain the same GDownloader version.
 
-- Incrementarla per correzioni a Dockerfile, rootfs, configurazione o documentazione che richiedono una nuova immagine.
-- Riportarla a `1` quando cambia `GDOWNLOADER_VERSION`, salvo una diversa convenzione approvata esplicitamente.
-- Non usarla al posto dei pin di yt-dlp o Deno: quei componenti mantengono le proprie variabili di versione.
+- Increment it for Dockerfile, rootfs, configuration, or documentation fixes that require a new image.
+- Reset it to `1` when `GDOWNLOADER_VERSION` changes, unless a different convention is explicitly approved.
+- Do not use it in place of yt-dlp or Deno pins; those components retain their own version variables.
 
-## Licenze e notice
+## Licenses and Notices
 
-Per ogni nuova release confrontare licenza, notice e componenti redistribuiti. Aggiornare [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md) quando cambiano versione, provenienza, licenza o obblighi di attribuzione. Verificare che la licenza GDownloader distribuita in [`LICENSE`](../LICENSE) resti coerente con la release upstream.
+For every new release, compare licenses, notices, and redistributed components. Update [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md) when a version, origin, license, or attribution obligation changes. Verify that the GDownloader license distributed in [`LICENSE`](../LICENSE) remains consistent with the upstream release.
 
-Una build tecnicamente riuscita non sostituisce questo controllo di redistribuzione.
+A technically successful build does not replace this redistribution review.
 
 ## Build
 
-Prima stampare il comando canonico e controllare piattaforma, tag e build argument:
+First print the canonical command and inspect its platform, tag, and build arguments:
 
 ```bash
 ./scripts/build.sh --dry-run
 ```
 
-Poi costruire l'immagine:
+Then build the image:
 
 ```bash
 ./scripts/build.sh
 ```
 
-Ricavare il tag dai valori autorevoli e ispezionare l'immagine:
+Derive the tag from the authoritative values and inspect the image:
 
 ```bash
 source versions.env
@@ -146,56 +146,56 @@ docker image inspect "$image_tag" \
   --format '{{.Architecture}} {{json .Config.Healthcheck}}'
 ```
 
-L'architettura deve essere `amd64` e il health check deve interrogare la porta interna `5800`.
+The architecture must be `amd64`, and the health check must query internal port `5800`.
 
-## Verifiche obbligatorie
+## Required Verification
 
-Eseguire prima i test mirati al componente cambiato, quindi la suite completa:
+Run focused tests for the changed component first, followed by the complete suite:
 
 ```bash
 bash tests/run.sh
 git diff --check
 ```
 
-La verifica di rilascio deve inoltre osservare su un container fresco:
+Release verification must also observe the following on a fresh container:
 
-1. endpoint HTTP e stato `healthy`;
-2. titolo e versione della GUI GDownloader;
-3. assenza del welcome wizard;
+1. the HTTP endpoint and `healthy` status;
+2. the GDownloader GUI title and version;
+3. absence of the welcome wizard;
 4. download path `/output`;
-5. aggiornamenti automatici, gallery-dl e spotDL disabilitati;
-6. presenza e versione di yt-dlp, Deno, FFmpeg e ffprobe;
-7. clipboard noVNC;
-8. completamento di un piccolo download autorizzato;
-9. ownership e scrivibilità dei file prodotti;
-10. persistenza di impostazioni, cronologia e file dopo la ricreazione con gli stessi mount.
+5. automatic updates, gallery-dl, and spotDL disabled;
+6. presence and versions of yt-dlp, Deno, FFmpeg, and ffprobe;
+7. the noVNC clipboard;
+8. completion of a small authorized download;
+9. ownership and writability of produced files;
+10. persistence of settings, history, and files after recreation with the same mounts.
 
-Aggiornare [`verification.md`](verification.md) con data, host, image ID, componenti e soli esiti realmente osservati.
+Update [`verification.md`](verification.md) with the date, host, image ID, components, and only outcomes that were actually observed.
 
 ## Deployment
 
-Prima della ricreazione fare un nuovo backup di `/config`. Aggiornare il tag immagine in `compose.yaml`, nello stack Portainer o nel comando `docker run`, senza cambiare i percorsi host collegati a `/config` e `/output`.
+Make a new `/config` backup before recreation. Update the image tag in `compose.yaml`, the Portainer stack, or the `docker run` command without changing the host paths mapped to `/config` and `/output`.
 
-Con Compose:
+With Compose:
 
 ```bash
 docker compose up -d --force-recreate
 ```
 
-Verificare health, log e GUI prima di rimuovere l'immagine precedente. I dati persistenti non devono essere copiati dentro l'immagine né sostituiti durante il deploy.
+Verify health, logs, and the GUI before removing the previous image. Persistent data must not be copied into the image or replaced during deployment.
 
 ## Rollback
 
-Conservare il tag immagine precedente almeno fino alla fine della verifica. In caso di regressione:
+Keep the previous image tag at least until verification is complete. If a regression occurs:
 
-1. fermare e rimuovere soltanto il nuovo container;
-2. ripristinare il tag precedente nel comando o nello stack;
-3. ricreare il container usando gli stessi mount `/config` e `/output`;
-4. verificare health, GUI, cronologia e accesso ai download;
-5. ripristinare il backup di `/config` soltanto se la nuova versione ne ha modificato il formato in modo incompatibile.
+1. stop and remove only the new container;
+2. restore the previous tag in the command or stack;
+3. recreate the container using the same `/config` and `/output` mounts;
+4. verify health, GUI, history, and access to downloads;
+5. restore the `/config` backup only if the new version changed its format incompatibly.
 
-Non cancellare `/output` durante un rollback. Se occorre ripristinare `/config`, conservare prima una copia dello stato più recente per l'analisi.
+Do not delete `/output` during a rollback. If `/config` must be restored, first retain a copy of the newest state for analysis.
 
-## Chiusura dell'aggiornamento
+## Completing the Update
 
-Aggiornare README, notice, glossario o architettura soltanto quando il relativo contratto cambia. Committare insieme pin, checksum, test ed eventuale documentazione collegata. Prima della consegna controllare che il worktree sia pulito e che il nuovo tag sia ricostruibile partendo dal checkout.
+Update the README, notices, glossary, or architecture only when the corresponding contract changes. Commit pins, checksums, tests, and any related documentation together. Before delivery, confirm that the worktree is clean and that the new tag can be rebuilt from the checkout.

@@ -1,41 +1,41 @@
 # GDownloader Docker
 
-Immagine Docker non ufficiale di [GDownloader](https://github.com/hstr0100/GDownloader), con la GUI Swing originale accessibile dal browser tramite noVNC. L'immagine è destinata esclusivamente a `linux/amd64` e include GDownloader, yt-dlp, Deno, FFmpeg e ffprobe. gallery-dl e spotDL non sono inclusi e risultano disabilitati nella configurazione iniziale.
+Unofficial Docker image for [GDownloader](https://github.com/hstr0100/GDownloader), with the original Swing GUI accessible from a browser through noVNC. The image targets `linux/amd64` exclusively and includes GDownloader, yt-dlp, Deno, FFmpeg, and ffprobe. gallery-dl and spotDL are not included and are disabled in the initial configuration.
 
-Questa è un'immagine *fixed*: applicazione e dipendenze vengono aggiornate ricostruendo e ricreando l'immagine. GDownloader non si aggiorna automaticamente dentro il container.
+This is a *fixed* image: the application and dependencies are updated by rebuilding and recreating the image. GDownloader does not update itself automatically inside the container.
 
-## Documentazione del progetto
+## Project Documentation
 
-- [Architettura](docs/architecture.md): build, avvio, GUI, persistenza e confini del sistema.
-- [Glossario](docs/glossary.md): vocabolario canonico usato nel repository.
-- [Manutenzione](docs/maintenance.md): aggiornamento di componenti, checksum, test, deployment e rollback.
-- [Verifica end-to-end](docs/verification.md): evidenze raccolte sull'immagine corrente.
+- [Architecture](docs/architecture.md): build, startup, GUI, persistence, and system boundaries.
+- [Glossary](docs/glossary.md): canonical vocabulary used in the repository.
+- [Maintenance](docs/maintenance.md): component updates, checksums, tests, deployment, and rollback.
+- [End-to-end verification](docs/verification.md): evidence collected for the current image.
 
-Gli agenti che modificano il repository devono iniziare da [AGENTS.md](AGENTS.md).
+Agents modifying the repository must start with [AGENTS.md](AGENTS.md).
 
-## Requisiti operativi
+## Runtime Requirements
 
-Per eseguire il container occorre scegliere soltanto:
+To run the container, you only need to choose:
 
-1. la porta host da collegare alla porta web `5800` del container;
-2. una cartella persistente da montare in `/config`;
-3. una cartella per i file scaricati da montare in `/output`.
+1. the host port to map to the container's web port `5800`;
+2. a persistent directory to mount at `/config`;
+3. a directory for downloaded files to mount at `/output`.
 
-Non serve un volume temporaneo separato. La porta VNC `5900` non viene pubblicata.
+No separate temporary volume is required. VNC port `5900` is not published.
 
 ## Build
 
-Da un checkout di questo repository:
+From a checkout of this repository:
 
 ```bash
 ./scripts/build.sh
 ```
 
-La build usa `versions.env`, verifica i checksum degli artefatti e produce `gdownloader-docker:1.7.8-1` per `linux/amd64`.
+The build reads `versions.env`, verifies artifact checksums, and produces `gdownloader-docker:1.7.8-1` for `linux/amd64`.
 
-## Avvio con Docker
+## Running with Docker
 
-Adattare i due percorsi host e, se necessario, il numero a sinistra di `5800:5800`:
+Adjust both host paths and, if necessary, the number to the left of `5800:5800`:
 
 ```bash
 docker run -d \
@@ -47,11 +47,11 @@ docker run -d \
     gdownloader-docker:1.7.8-1
 ```
 
-Aprire `http://<IP-SERVER>:5800`. Per usare, ad esempio, la porta host 8080, sostituire il mapping con `-p 8080:5800` e aprire `http://<IP-SERVER>:8080`.
+Open `http://<SERVER-IP>:5800`. To use host port 8080, for example, change the mapping to `-p 8080:5800` and open `http://<SERVER-IP>:8080`.
 
 ## Docker Compose
 
-Il file [compose.yaml](compose.yaml) contiene la configurazione minima:
+The [compose.yaml](compose.yaml) file contains the minimal configuration:
 
 ```yaml
 services:
@@ -66,7 +66,7 @@ services:
     restart: unless-stopped
 ```
 
-Dopo aver corretto porta e percorsi:
+After adjusting the port and paths:
 
 ```bash
 docker compose up -d
@@ -74,34 +74,34 @@ docker compose up -d
 
 ## Portainer Stack
 
-1. Rendere disponibile sul nodo Docker l'immagine `gdownloader-docker:1.7.8-1`, costruendola con `./scripts/build.sh` oppure caricandola da un registry privato.
-2. In Portainer aprire **Stacks**, scegliere **Add stack** e incollare il contenuto di `compose.yaml` nel Web editor.
-3. Modificare obbligatoriamente porta host, percorso di `/config` e percorso di `/output` in base al server.
-4. Selezionare **Deploy the stack** e aprire `http://<IP-SERVER>:5800`.
+1. Make the `gdownloader-docker:1.7.8-1` image available on the Docker node by building it with `./scripts/build.sh` or loading it from a private registry.
+2. In Portainer, open **Stacks**, select **Add stack**, and paste the contents of `compose.yaml` into the Web editor.
+3. You must adjust the host port, `/config` path, and `/output` path for your server.
+4. Select **Deploy the stack** and open `http://<SERVER-IP>:5800`.
 
-Portainer non costruisce automaticamente questa immagine dal solo Compose: il tag indicato deve già esistere sul nodo o essere disponibile in un registry raggiungibile.
+Portainer does not automatically build this image from the Compose file alone: the referenced tag must already exist on the node or be available from a reachable registry.
 
-## Variabili opzionali
+## Optional Variables
 
-Nessuna variabile è obbligatoria. I valori predefiniti della base jlesage sono:
+No variable is required. The jlesage base defaults are:
 
-| Variabile | Default | Funzione |
+| Variable | Default | Purpose |
 | --- | --- | --- |
-| `USER_ID` | `1000` | UID usato dal processo applicativo |
-| `GROUP_ID` | `1000` | GID usato dal processo applicativo |
-| `UMASK` | `0022` | Maschera dei permessi dei nuovi file |
-| `TZ` | `Etc/UTC` | Fuso orario del container |
-| `LANG` | `en_US.UTF-8` | Lingua/locale del container |
-| `DISPLAY_WIDTH` | `1920` | Larghezza del desktop virtuale |
-| `DISPLAY_HEIGHT` | `1080` | Altezza del desktop virtuale |
+| `USER_ID` | `1000` | UID used by the application process |
+| `GROUP_ID` | `1000` | GID used by the application process |
+| `UMASK` | `0022` | Permission mask for new files |
+| `TZ` | `Etc/UTC` | Container time zone |
+| `LANG` | `en_US.UTF-8` | Container language/locale |
+| `DISPLAY_WIDTH` | `1920` | Virtual desktop width |
+| `DISPLAY_HEIGHT` | `1080` | Virtual desktop height |
 
-Per aggiungerle a `docker run`, usare per esempio `-e TZ=Europe/Rome`. In Compose si possono inserire sotto una sezione `environment:`.
+To add them to `docker run`, use `-e TZ=Europe/Rome`, for example. In Compose, add them under an `environment:` section.
 
-## Persistenza e backup
+## Persistence and Backup
 
-`/config` contiene configurazione, log e stato di GDownloader; `/output` contiene i download. Ricreare il container con gli stessi mount conserva entrambi. Non montare la stessa cartella host nei due percorsi.
+`/config` contains GDownloader configuration, logs, and state; `/output` contains downloads. Recreating the container with the same mounts preserves both. Do not mount the same host directory at both paths.
 
-Per un backup coerente della configurazione, fermare il container e archiviare la cartella host:
+For a consistent configuration backup, stop the container and archive the host directory:
 
 ```bash
 docker stop gdownloader
@@ -109,32 +109,32 @@ tar -C /docker/appdata -czf gdownloader-config-backup.tgz gdownloader
 docker start gdownloader
 ```
 
-## Aggiornamento
+## Updating
 
-L'aggiornamento manuale consiste nel modificare le versioni e i checksum in `versions.env`, ricostruire con `./scripts/build.sh` e ricreare il container usando gli stessi volumi. Prima dell'operazione fare un backup di `/config`.
+A manual update consists of changing versions and checksums in `versions.env`, rebuilding with `./scripts/build.sh`, and recreating the container with the same volumes. Back up `/config` before the operation.
 
-La procedura tipica con Compose è:
+The typical Compose procedure is:
 
 ```bash
 ./scripts/build.sh
 docker compose up -d --force-recreate
 ```
 
-L'assenza di auto-update è una limitazione intenzionale della prima versione: dipendenze e GDownloader restano riproducibili e cambiano solo con una nuova immagine.
+The absence of automatic updates is an intentional limitation of the first version: dependencies and GDownloader remain reproducible and change only with a new image.
 
-## Sicurezza
+## Security
 
-Questa configurazione è pensata per essere esposta **solo nella rete locale**. La UI web non va pubblicata direttamente su Internet: il mapping predefinito ascolta su tutte le interfacce host e la base non abilita autenticazione per default. Per accesso remoto usare una VPN o un reverse proxy autenticato e protetto con TLS.
+This configuration is intended for exposure **only on a trusted local network**. Do not publish the web UI directly on the Internet: the default mapping listens on all host interfaces, and the base does not enable authentication by default. For remote access, use a VPN or an authenticated reverse proxy protected with TLS.
 
-## Risoluzione dei problemi
+## Troubleshooting
 
-- **Permessi:** verificare che UID/GID configurati possano scrivere nelle cartelle host di `/config` e `/output`. I log di avvio riportano chiaramente quale directory non è scrivibile.
-- **Healthcheck:** eseguire `docker inspect --format '{{json .State.Health}}' gdownloader` e verificare che la porta interna `5800` risponda.
-- **Log:** usare `docker logs gdownloader`; i log applicativi persistenti sono in `/config/logs/current.log`.
-- **FFmpeg:** controllare con `docker exec gdownloader ffmpeg -version` e `docker exec gdownloader ffprobe -version`. La configurazione iniziale usa gli eseguibili di sistema inclusi nell'immagine.
-- **UI non raggiungibile:** controllare `docker ps`, il mapping della porta e l'eventuale firewall del server.
+- **Permissions:** verify that the configured UID/GID can write to the host directories mounted at `/config` and `/output`. Startup logs clearly identify any unwritable directory.
+- **Health check:** run `docker inspect --format '{{json .State.Health}}' gdownloader` and verify that internal port `5800` responds.
+- **Logs:** use `docker logs gdownloader`; persistent application logs are stored in `/config/logs/current.log`.
+- **FFmpeg:** check with `docker exec gdownloader ffmpeg -version` and `docker exec gdownloader ffprobe -version`. The initial configuration uses the system executables included in the image.
+- **UI unreachable:** check `docker ps`, the port mapping, and the server firewall.
 
-## Sorgenti dei componenti inclusi
+## Included Component Sources
 
 - [GDownloader 1.7.8](https://github.com/hstr0100/GDownloader/tree/v1.7.8)
 - [yt-dlp 2026.07.04](https://github.com/yt-dlp/yt-dlp/tree/2026.07.04)
@@ -142,4 +142,4 @@ Questa configurazione è pensata per essere esposta **solo nella rete locale**. 
 - [FFmpeg](https://ffmpeg.org/)
 - [jlesage/baseimage-gui](https://github.com/jlesage/docker-baseimage-gui)
 
-Le informazioni di licenza e redistribuzione sono in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). GDownloader è un progetto upstream di hstr0100; questo packaging Docker non è affiliato né supportato dal progetto originale.
+License and redistribution information is available in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). GDownloader is an upstream project by hstr0100; this Docker packaging is neither affiliated with nor supported by the original project.
