@@ -1,0 +1,19 @@
+{
+  "ConfigVersion": 38,
+  "ShowWelcomeScreen": false,
+  "LanguageDefined": true,
+  "AutomaticUpdates": false,
+  "PreferSystemExecutables": true,
+  "DownloadsPath": "/output",
+  "YtDlpSettings": {
+    "PreferSystemExecutable": true
+  },
+  "GalleryDLSettings": {
+    "Enabled": false,
+    "PreferSystemExecutable": true
+  },
+  "SpotDLSettings": {
+    "Enabled": false,
+    "PreferSystemExecutable": true
+  }
+}

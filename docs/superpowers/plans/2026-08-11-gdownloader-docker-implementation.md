@@ -569,9 +569,9 @@ grep -F '5800:5800' "$repo_dir/compose.yaml"
 grep -F '/config' "$repo_dir/compose.yaml"
 grep -F '/output' "$repo_dir/compose.yaml"
 ! grep -F '5900:' "$repo_dir/compose.yaml"
-grep -F 'solo nella rete locale' "$repo_dir/README.md"
+grep -F 'trusted local network' "$repo_dir/README.md"
 grep -F 'Portainer' "$repo_dir/README.md"
-grep -F 'aggiornamento manuale' "$repo_dir/README.md"
+grep -F 'manual update' "$repo_dir/README.md"
 for name in GDownloader yt-dlp Deno FFmpeg; do grep -F "$name" "$repo_dir/THIRD_PARTY_NOTICES.md"; done
 ```
 
@@ -613,8 +613,8 @@ Include these exact sections and commands:
 - optional variable table with `USER_ID=1000`, `GROUP_ID=1000`, `UMASK=0022`, `TZ=Etc/UTC`, `LANG=en_US.UTF-8`, `DISPLAY_WIDTH=1920`, `DISPLAY_HEIGHT=1080`;
 - upgrade procedure that recreates with the same volumes;
 - `/config` backup procedure;
-- warning containing `solo nella rete locale`;
-- known `aggiornamento manuale` limitation;
+- warning containing `trusted local network`;
+- known `manual update` limitation;
 - troubleshooting for permissions, health, logs, and FFmpeg detection;
 - exact packaged-source links.
 
