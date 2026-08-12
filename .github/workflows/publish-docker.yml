@@ -1,0 +1,73 @@
+name: Publish Docker image
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out released source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Validate release version
+        id: version
+        shell: bash
+        run: |
+          value=$(scripts/release-version.sh "${{ github.event.release.tag_name }}")
+          printf 'value=%s\n' "$value" >> "$GITHUB_OUTPUT"
+
+      - name: Load pinned build arguments
+        shell: bash
+        run: cat versions.env >> "$GITHUB_ENV"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+
+      - name: Build and load image
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          load: true
+          push: false
+          tags: |
+            gdownloader-docker:${{ steps.version.outputs.value }}
+            ${{ vars.DOCKERHUB_USERNAME }}/gdownloader-docker:${{ steps.version.outputs.value }}
+            ${{ vars.DOCKERHUB_USERNAME }}/gdownloader-docker:latest
+          build-args: |
+            BASE_IMAGE=${{ env.BASE_IMAGE }}
+            CONTAINER_REVISION=${{ env.CONTAINER_REVISION }}
+            GDOWNLOADER_VERSION=${{ env.GDOWNLOADER_VERSION }}
+            GDOWNLOADER_SHA256=${{ env.GDOWNLOADER_SHA256 }}
+            YTDLP_VERSION=${{ env.YTDLP_VERSION }}
+            YTDLP_SHA256=${{ env.YTDLP_SHA256 }}
+            DENO_VERSION=${{ env.DENO_VERSION }}
+            DENO_SHA256=${{ env.DENO_SHA256 }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.version.outputs.value }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test image
+        shell: bash
+        run: bash tests/run.sh
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push tested tags
+        shell: bash
+        run: |
+          docker push "${{ vars.DOCKERHUB_USERNAME }}/gdownloader-docker:${{ steps.version.outputs.value }}"
+          docker push "${{ vars.DOCKERHUB_USERNAME }}/gdownloader-docker:latest"

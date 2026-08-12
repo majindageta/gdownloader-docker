@@ -5,6 +5,7 @@ repo_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 
 bash "$repo_dir/tests/test-build-script.sh"
 bash "$repo_dir/tests/test-release-version.sh"
+bash "$repo_dir/tests/test-publish-workflow.sh"
 bash "$repo_dir/tests/test-bootstrap.sh"
 bash "$repo_dir/tests/test-dockerfile.sh"
 bash "$repo_dir/tests/test-docs.sh"
