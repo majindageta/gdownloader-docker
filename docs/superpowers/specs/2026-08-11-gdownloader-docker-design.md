@@ -1,177 +1,148 @@
-# GDownloader Docker: specifica di design
+# GDownloader Docker: Design Specification
 
-Data: 2026-08-11  
-Stato: design approvato
+Date: 2026-08-11
+Status: design approved
 
-## 1. Obiettivo
+## 1. Objective
 
-Realizzare un'immagine Docker non ufficiale di GDownloader per server Linux
-`amd64`, distribuibile anche con Portainer. La GUI Java Swing originale deve
-essere utilizzabile da un browser nella rete locale tramite noVNC, seguendo il
-modello di `jlesage/docker-jdownloader-2`.
+Create an unofficial Docker image of GDownloader for Linux `amd64` servers that can also be deployed with Portainer. The original Java Swing GUI must be usable from a browser on the local network through noVNC, following the model of `jlesage/docker-jdownloader-2`.
 
-L'immagine deve includere GDownloader, yt-dlp, Deno, FFmpeg e FFprobe. Lo stato
-applicativo e i download devono sopravvivere alla ricreazione del container in
-due volumi distinti.
+The image must include GDownloader, yt-dlp, Deno, FFmpeg, and FFprobe. Application state and downloads must survive container recreation in two separate volumes.
 
-## 2. Ambito
+## 2. Scope
 
-La prima versione comprende:
+The first version includes:
 
-- piattaforma `linux/amd64`;
-- release Linux portable ufficiale di GDownloader;
-- GUI originale esposta via browser;
-- yt-dlp come unico motore di download;
-- Deno per il supporto richiesto da yt-dlp;
-- FFmpeg e FFprobe per elaborazione e transcodifica;
-- configurazione persistente in `/config`;
-- download persistenti in `/output`;
-- esempio Docker Compose compatibile con Portainer;
-- esecuzione non root con UID, GID e umask configurabili;
-- health check della UI web.
+- `linux/amd64` platform;
+- official portable Linux release of GDownloader;
+- original GUI exposed through a browser;
+- yt-dlp as the only download engine;
+- Deno for the support required by yt-dlp;
+- FFmpeg and FFprobe for processing and transcoding;
+- persistent configuration in `/config`;
+- persistent downloads in `/output`;
+- a Docker Compose example compatible with Portainer;
+- non-root execution with configurable UID, GID, and umask;
+- a web UI health check.
 
-Sono esclusi dalla prima versione:
+The following are excluded from the first version:
 
-- architetture ARM;
-- gallery-dl e spotDL;
-- una nuova UI web nativa;
-- HTTPS, autenticazione e pubblicazione su Internet;
-- esposizione ordinaria della porta VNC;
-- auto-aggiornamento delle dipendenze durante l'esecuzione;
-- volume temporaneo separato;
-- compilazione di GDownloader dal sorgente;
-- modifiche al codice sorgente upstream di GDownloader.
+- ARM architectures;
+- gallery-dl and spotDL;
+- a new native web UI;
+- HTTPS, authentication, and Internet publication;
+- regular exposure of the VNC port;
+- automatic dependency updates during runtime;
+- a separate temporary volume;
+- compiling GDownloader from source;
+- modifying GDownloader upstream source code.
 
-## 3. Decisione architetturale
+## 3. Architectural Decision
 
-L'immagine runtime deriva dalla variante Ubuntu 24.04 della serie v4 di
-`jlesage/baseimage-gui`. Una versione completa della base, non un tag mobile,
-viene fissata nel Dockerfile di ogni release.
+The runtime image derives from the Ubuntu 24.04 variant of the v4 series of `jlesage/baseimage-gui`. Each release pins a complete base version, not a moving tag, in the Dockerfile.
 
-La base fornisce:
+The base provides:
 
-- server X virtuale;
+- virtual X server;
 - Openbox;
 - TigerVNC;
-- noVNC e server HTTP;
-- supervisione dei processi;
-- gestione di UID, GID, umask, locale e timezone.
+- noVNC and an HTTP server;
+- process supervision;
+- management of UID, GID, umask, locale, and timezone.
 
-Il progetto aggiunge:
+The project adds:
 
-- GDownloader sotto `/opt/gdownloader`;
-- yt-dlp e Deno come eseguibili di sistema;
-- FFmpeg e FFprobe;
-- configurazione iniziale adatta al container;
-- script di inizializzazione e avvio.
+- GDownloader under `/opt/gdownloader`;
+- yt-dlp and Deno as system executables;
+- FFmpeg and FFprobe;
+- initial configuration suitable for the container;
+- initialization and startup scripts.
 
-Il flusso principale è:
+The main flow is:
 
 ```text
-browser nella LAN
-  -> HTTP sulla porta pubblicata dall'host
+browser on the LAN
+  -> HTTP on the port published by the host
   -> noVNC / TigerVNC / Openbox
-  -> GUI Swing di GDownloader
+  -> GDownloader Swing GUI
   -> yt-dlp + Deno + FFmpeg
   -> /output
 ```
 
-Non viene introdotta un'API remota di GDownloader.
+No GDownloader remote API is introduced.
 
-## 4. Costruzione dell'immagine
+## 4. Image Build
 
-La build scarica la ZIP Linux portable `amd64` dalla release ufficiale di
-GDownloader e ne verifica il checksum. La release portable include il runtime
-Java prodotto da `jpackage`, quindi nell'immagine finale non serve un JDK.
+The build downloads the portable Linux `amd64` ZIP from the official GDownloader release and verifies its checksum. The portable release includes the Java runtime produced by `jpackage`, so the final image does not require a JDK.
 
-La modalità portable upstream scriverebbe lo stato accanto all'applicazione.
-Durante la build viene rimosso il relativo indicatore `portable.lock`, così
-`/opt/gdownloader` resta immutabile e lo stato può essere reindirizzato al
-volume `/config`.
+Upstream portable mode would write state alongside the application. During the build, the relevant `portable.lock` marker is removed so `/opt/gdownloader` remains immutable and state can be redirected to the `/config` volume.
 
-yt-dlp e Deno vengono scaricati in versioni esplicite e verificati con checksum.
-FFmpeg e FFprobe vengono installati dalla distribuzione. La versione effettiva
-di ogni componente viene registrata nei metadati o nella documentazione della
-release dell'immagine.
+yt-dlp and Deno are downloaded at explicit versions and verified with checksums. FFmpeg and FFprobe are installed from the distribution. The effective version of each component is recorded in the image metadata or release documentation.
 
-Una build pubblicabile non usa URL `latest`. L'aggiornamento di un componente
-richiede una modifica esplicita del repository e genera una nuova immagine.
+A publishable build does not use the `latest` URL. Updating a component requires an explicit repository change and produces a new image.
 
-## 5. Layout runtime
+## 5. Runtime Layout
 
 ```text
-/opt/gdownloader  applicazione e runtime Java immutabili
-/config           configurazione, database, cronologia e log persistenti
-/output           download, file parziali e cache persistenti
-/tmp              file temporanei effimeri del container
+/opt/gdownloader  immutable application and Java runtime
+/config           persistent configuration, database, history and logs
+/output           persistent downloads, partial files and cache
+/tmp              ephemeral container temporary files
 ```
 
-La cache multimediale di GDownloader resta sotto `/output/tmp`, coerentemente
-con il comportamento upstream. Non viene introdotto un mount `/temp`.
+GDownloader's media cache remains under `/output/tmp`, consistent with upstream behavior. No `/temp` mount is introduced.
 
-## 6. Inizializzazione e avvio
+## 6. Initialization and Startup
 
-Prima di avviare la GUI, lo script di inizializzazione:
+Before starting the GUI, the initialization script:
 
-1. crea `/config` e `/output` se necessario;
-2. applica la gestione dei permessi prevista dalla base jlesage;
-3. verifica che entrambe le directory siano scrivibili dall'utente applicativo;
-4. collega la directory di lavoro Linux di GDownloader al volume `/config`;
-5. crea la configurazione iniziale solo quando non esiste;
-6. verifica la presenza di GDownloader, yt-dlp, Deno, FFmpeg e FFprobe;
-7. avvia il launcher ufficiale di GDownloader nel display virtuale.
+1. creates `/config` and `/output` if needed;
+2. applies the permission management provided by the jlesage base;
+3. verifies that both directories are writable by the application user;
+4. links GDownloader's Linux home directory to the `/config` volume;
+5. creates the initial configuration only when it does not exist;
+6. verifies the presence of GDownloader, yt-dlp, Deno, FFmpeg, and FFprobe;
+7. starts the official GDownloader launcher in the virtual display.
 
-Il collegamento fra `~/.gdownloader` e `/config` può essere realizzato dal
-launcher tramite home JVM dedicata o link simbolico. La scelta implementativa
-deve rispettare il contratto osservabile: nessuno stato persistente deve essere
-scritto fuori da `/config`.
+The link between `~/.gdownloader` and `/config` may be implemented by the launcher through a dedicated JVM home or a symbolic link. The implementation choice must respect the observable contract: no persistent state may be written outside `/config`.
 
-La configurazione iniziale imposta:
+The initial configuration sets:
 
-- `DownloadsPath` a `/output`;
-- aggiornamenti automatici disabilitati;
-- preferenza per gli eseguibili di sistema;
-- gallery-dl disabilitato;
-- spotDL disabilitato.
+- `DownloadsPath` to `/output`;
+- automatic updates disabled;
+- preference for system executables;
+- gallery-dl disabled;
+- spotDL disabled.
 
-Una configurazione esistente non viene sovrascritta. Le migrazioni tra versioni
-restano responsabilità di GDownloader.
+An existing configuration is not overwritten. Migrations between versions remain GDownloader's responsibility.
 
-Se `config.json` non è JSON valido, l'inizializzatore lo rinomina con un nome di
-backup univoco e crea una nuova configurazione iniziale. Gli altri file presenti
-in `/config` non vengono rimossi.
+If `config.json` is not valid JSON, the initializer renames it with a unique backup name and creates a new initial configuration. Other files present in `/config` are not removed.
 
-## 7. Aggiornamenti e immutabilità
+## 7. Updates and Immutability
 
-L'unità di aggiornamento è l'immagine Docker:
+The unit of update is the Docker image:
 
 ```text
-nuova release o nuove dipendenze
-  -> nuova build e nuovo tag
-  -> pull dell'immagine
-  -> ricreazione del container
-  -> riuso di /config e /output
+new release or new dependencies
+  -> new build and new tag
+  -> pull the image
+  -> recreate the container
+  -> reuse /config and /output
 ```
 
-GDownloader usa gli eseguibili forniti dall'immagine e non li aggiorna
-automaticamente. Anche il self-update automatico di GDownloader è disabilitato
-dalla configurazione iniziale.
+GDownloader uses the executables provided by the image and does not update them automatically. GDownloader's own automatic update is also disabled by the initial configuration.
 
-Poiché non viene modificato il codice upstream, il comando manuale di controllo
-aggiornamenti presente nella GUI può ancora forzare un aggiornamento. Questo è
-un limite noto e documentato della prima versione. L'immutabilità è garantita
-nel normale avvio e funzionamento, non contro un aggiornamento manuale richiesto
-esplicitamente dall'utente.
+Because the upstream code is not modified, the manual update command in the GUI can still force an update. This is a known limitation documented for the first version. Immutability is guaranteed during normal startup and operation, not against an update explicitly requested by the user.
 
-## 8. Contratto Docker
+## 8. Docker Contract
 
-Il deployment minimo documentato richiede:
+The documented minimum deployment requires:
 
-- una porta host pubblicata verso `5800/tcp`;
-- un volume persistente montato su `/config`;
-- un volume persistente montato su `/output`.
+- a host port published to `5800/tcp`;
+- a persistent volume mounted at `/config`;
+- a persistent volume mounted at `/output`.
 
-Esempio:
+Example:
 
 ```sh
 docker run -d \
@@ -182,85 +153,70 @@ docker run -d \
   gdownloader
 ```
 
-La porta host è liberamente sostituibile, per esempio `8080:5800`. La porta
-interna rimane `5800/tcp`.
+The host port can be changed freely, for example to `8080:5800`. The internal port remains `5800/tcp`.
 
-Docker consente l'avvio senza pubblicare la porta e può creare volumi anonimi
-quando mancano bind mount espliciti. Il container non tenta di bloccare questi
-casi: porta e due mapping sono requisiti operativi documentati, non controlli
-artificialmente imposti all'avvio.
+Docker permits startup without publishing the port and can create anonymous volumes when explicit bind mounts are absent. The container does not attempt to block these cases: the port and two mappings are documented operational requirements, not artificial startup controls.
 
-La porta `5900/tcp` non è pubblicata nel Compose predefinito.
+Port `5900/tcp` is not published in the default Compose configuration.
 
-## 9. Parametri runtime
+## 9. Runtime Parameters
 
-Tutte le variabili d'ambiente sono opzionali. Vengono riutilizzati i parametri
-standard della base jlesage:
+All environment variables are optional. The standard jlesage base parameters are reused:
 
-| Variabile | Valore predefinito | Scopo |
+| Variable | Default Value | Purpose |
 | --- | --- | --- |
-| `USER_ID` | `1000` | UID dell'utente applicativo |
-| `GROUP_ID` | `1000` | GID dell'utente applicativo |
-| `UMASK` | `0022` | Permessi predefiniti dei file creati |
-| `TZ` | `Etc/UTC` | Timezone del container |
-| `LANG` | `en_US.UTF-8` | Locale del container |
-| `DISPLAY_WIDTH` | `1920` | Larghezza del desktop virtuale |
-| `DISPLAY_HEIGHT` | `1080` | Altezza del desktop virtuale |
+| `USER_ID` | `1000` | Application user UID |
+| `GROUP_ID` | `1000` | Application user GID |
+| `UMASK` | `0022` | Default permissions for created files |
+| `TZ` | `Etc/UTC` | Container timezone |
+| `LANG` | `en_US.UTF-8` | Container locale |
+| `DISPLAY_WIDTH` | `1920` | Virtual desktop width |
+| `DISPLAY_HEIGHT` | `1080` | Virtual desktop height |
 
-Le funzioni ulteriori della base jlesage non vengono ridefinite. La
-documentazione iniziale espone soltanto i parametri utili al caso d'uso.
+Other jlesage base features are not redefined. The initial documentation exposes only parameters useful for this use case.
 
-Non sono configurabili a runtime:
+The following are not configurable at runtime:
 
-- percorsi interni `/config` e `/output`;
-- versioni di GDownloader, yt-dlp, Deno e FFmpeg;
-- abilitazione di gallery-dl e spotDL;
-- auto-aggiornamento.
+- internal paths `/config` and `/output`;
+- versions of GDownloader, yt-dlp, Deno, and FFmpeg;
+- enabling gallery-dl and spotDL;
+- automatic updating.
 
-## 10. Sicurezza e rete
+## 10. Security and Networking
 
-La prima versione è destinata esclusivamente a una rete locale fidata:
+The first version is intended exclusively for a trusted local network:
 
-- HTTP senza TLS;
-- autenticazione web disabilitata per impostazione iniziale;
-- nessuna porta applicativa aggiuntiva;
-- nessuna modalità host network;
-- nessun privilegio Docker aggiuntivo richiesto;
-- processo applicativo non root.
+- HTTP without TLS;
+- web authentication disabled by default;
+- no additional application ports;
+- no host network mode;
+- no additional Docker privileges required;
+- non-root application process.
 
-Il README deve avvertire esplicitamente di non pubblicare la UI su Internet. Un
-deployment Internet-facing richiede un design successivo con HTTPS,
-autenticazione e reverse proxy.
+The README must explicitly warn against publishing the UI on the Internet. An Internet-facing deployment requires a later design with HTTPS, authentication, and a reverse proxy.
 
-## 11. Gestione degli errori
+## 11. Error Handling
 
-- Se `/config` o `/output` non è scrivibile, l'avvio fallisce con un messaggio
-  che identifica directory, UID e GID effettivi.
-- Se un eseguibile richiesto manca o non è eseguibile, l'avvio fallisce prima
-  di mostrare la GUI.
-- Se `config.json` è corrotto, viene conservato come backup e rigenerato.
-- Se la rete non è disponibile, la GUI può avviarsi; saranno i download a non
-  funzionare.
-- Se GDownloader termina, il supervisore e la policy Docker gestiscono il ciclo
-  di vita senza lasciare processi orfani.
-- Un arresto Docker invia il segnale al processo e attende la chiusura pulita
-  prima di forzarlo.
+- If `/config` or `/output` is not writable, startup fails with a message identifying the directory and effective UID and GID.
+- If a required executable is missing or not executable, startup fails before displaying the GUI.
+- If `config.json` is corrupt, it is preserved as a backup and regenerated.
+- If the network is unavailable, the GUI may start but downloads will not work.
+- If GDownloader exits, the supervisor and Docker policy manage the lifecycle without leaving orphan processes.
+- A Docker stop sends the signal to the process and waits for a clean shutdown before forcing it.
 
-## 12. Versionamento
+## 12. Versioning
 
-I tag dell'immagine seguono lo schema:
+Image tags follow this schema:
 
 ```text
-<versione-gdownloader>-<revisione-container>
+<gdownloader-version>-<container-revision>
 ```
 
-Esempio: `1.7.8-1`.
+Example: `1.7.8-1`.
 
-La revisione container aumenta quando cambia il packaging o una dipendenza senza
-che cambi la versione di GDownloader. Il tag `latest`, se pubblicato in futuro,
-è soltanto un alias e non viene usato come input della build.
+The container revision increases when the packaging or a dependency changes without changing the GDownloader version. The `latest` tag, if published in the future, is merely an alias and is not used as a build input.
 
-## 13. Struttura prevista del repository
+## 13. Planned Repository Structure
 
 ```text
 Dockerfile
@@ -276,32 +232,27 @@ scripts/
 docs/superpowers/specs/
 ```
 
-Gli script in `scripts/` servono per controlli ripetibili di build e verifica,
-non per sostituire il normale flusso Docker.
+Scripts under `scripts/` provide repeatable build checks and verification; they do not replace the normal Docker workflow.
 
-## 14. Strategia di verifica
+## 14. Verification Strategy
 
-Una release è accettabile quando supera tutti i controlli seguenti:
+A release is acceptable when it passes all the following checks:
 
-1. build riuscita per `linux/amd64`;
-2. verifica dei checksum degli artefatti scaricati;
-3. avvio con `/config` e `/output` vuoti;
-4. health check della UI web positivo;
-5. GUI Swing visibile e utilizzabile dal browser;
-6. rilevamento delle versioni incluse di yt-dlp, Deno, FFmpeg e FFprobe;
-7. assenza di gallery-dl e spotDL senza errori bloccanti;
-8. download di un piccolo contenuto autorizzato;
-9. risultato presente sotto `/output` con proprietà e permessi corretti;
-10. ricreazione del container conservando configurazione, coda e cronologia;
-11. avvio e scrittura con UID/GID non root;
-12. nessun download di aggiornamenti durante un avvio normale;
-13. arresto e riavvio puliti tramite Docker;
-14. messaggio diagnostico corretto quando un volume non è scrivibile.
+1. successful build for `linux/amd64`;
+2. verification of downloaded-artifact checksums;
+3. startup with empty `/config` and `/output`;
+4. positive web UI health check;
+5. visible and usable GDownloader Swing GUI from the browser;
+6. detection of the included yt-dlp, Deno, FFmpeg, and FFprobe versions;
+7. absence of gallery-dl and spotDL without blocking errors;
+8. download of a small authorized item;
+9. result present under `/output` with correct properties and permissions;
+10. container recreation preserving configuration, queue, and history;
+11. startup and writing with a non-root UID/GID;
+12. no update downloads during normal startup;
+13. clean stop and restart through Docker;
+14. correct diagnostic message when a volume is not writable.
 
-## 15. Criteri di completamento
+## 15. Completion Criteria
 
-Il primo rilascio è completato quando un utente può copiare il Compose di
-esempio in Portainer, modificare porta e percorsi host, avviare il container,
-aprire la GUI GDownloader dal browser e scaricare con yt-dlp in `/output`, senza
-installare dipendenze sul server e conservando stato e download dopo la
-ricreazione del container.
+The first release is complete when a user can copy the Compose example into Portainer, change the port and host paths, start the container, open the GDownloader GUI from the browser, and download through yt-dlp into `/output` without installing dependencies on the server, while preserving state and downloads after container recreation.

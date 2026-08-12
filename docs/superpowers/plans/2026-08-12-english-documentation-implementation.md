@@ -62,19 +62,19 @@ The already-English design and this plan remain unchanged during implementation:
 Update the exact phrases and headings asserted by `tests/test-docs.sh` before translating the documents:
 
 ```text
-solo nella rete locale       -> trusted local network
-aggiornamento manuale        -> manual update
-Pipeline di build            -> Build Pipeline
-Sequenza di avvio            -> Startup Sequence
-Persistenza                  -> Persistence
-Rete e sicurezza             -> Networking and Security
-Confini intenzionali         -> Intentional Boundaries
-Immagine fixed               -> Fixed Image
-Base image jlesage           -> jlesage Base Image
-Desktop virtuale             -> Virtual Desktop
-Stato persistente            -> Persistent State
-Eseguibile di sistema        -> System Executable
-Checksum SHA-256             -> SHA-256 Checksum
+local-network security phrase -> trusted local network
+update-model phrase           -> manual update
+build heading                 -> Build Pipeline
+startup heading               -> Startup Sequence
+persistence heading           -> Persistence
+networking heading            -> Networking and Security
+boundaries heading            -> Intentional Boundaries
+image-model heading           -> Fixed Image
+base-image heading            -> jlesage Base Image
+desktop heading               -> Virtual Desktop
+state heading                 -> Persistent State
+executable heading            -> System Executable
+checksum heading              -> SHA-256 Checksum
 ```
 
 Keep the wording of technical glossary headings that is already canonical English, while normalizing heading capitalization: `Upstream`, `Portable Mode`, `noVNC`, `Bootstrap`, `Config Seed`, `Bind Mount`, `Volume`, `/config`, `/output`, `Pin`, `Image Revision`, `Health Check`, and `Smoke Test`.
@@ -119,7 +119,7 @@ Run:
 bash tests/test-docs.sh
 ```
 
-Expected: FAIL because the documents still contain the former Italian phrases or headings, such as `solo nella rete locale` or `## Pipeline di build`.
+Expected: FAIL because the documents still contain the former Italian security phrase or architecture headings.
 
 - [ ] **Step 3: Translate `AGENTS.md` and preserve its routing contract**
 
@@ -268,7 +268,7 @@ Expected: PASS with all Compose, cross-link, constraint, glossary, maintenance, 
 Run this targeted review scan:
 
 ```bash
-rg -n -i --glob '*.md' '\b(aggiornamento|architettura|avvio|cartella|contenitore|documentazione|immagine|manutenzione|persistenza|progetto|rete|scaricare|verifica|vincoli)\b' \
+rg -n --glob '*.md' '[àèéìòùÀÈÉÌÒÙ]' \
   AGENTS.md README.md docs/architecture.md docs/glossary.md docs/maintenance.md docs/verification.md
 ```
 
@@ -371,7 +371,7 @@ Preserve executable shell, Dockerfile, JSON, and YAML content unless the text is
 Run:
 
 ```bash
-git ls-files '*.md' | xargs rg -n -i '\b(aggiornamento|architettura|avvio|cartella|contenitore|documentazione|immagine|manutenzione|persistenza|progetto|rete|scaricare|verifica|vincoli)\b'
+git ls-files '*.md' | xargs rg -n '[àèéìòùÀÈÉÌÒÙ]'
 ```
 
 Expected: no residual Italian prose. Review matches manually before changing technical names, URLs, quotations, or words that are valid in English.
