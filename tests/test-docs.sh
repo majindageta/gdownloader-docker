@@ -16,6 +16,44 @@ grep -Fq 'DOCKERHUB_TOKEN' "$repo_dir/README.md"
 grep -Fq 'DOCKERHUB_USERNAME' "$repo_dir/README.md"
 grep -F 'trusted local network' "$repo_dir/README.md"
 
+for file in CONTRIBUTING.md SECURITY.md docs/releasing.md; do
+  [[ -s "$repo_dir/$file" ]] || { echo "Missing public documentation: $file" >&2; exit 1; }
+  grep -Fq "$file" "$repo_dir/README.md"
+done
+
+grep -Fq 'docs/releasing.md' "$repo_dir/AGENTS.md"
+grep -Fq 'github-actions-gdownloader-docker' "$repo_dir/docs/releasing.md"
+grep -Fq 'Read & Write' "$repo_dir/docs/releasing.md"
+grep -Fq 'DOCKERHUB_USERNAME' "$repo_dir/docs/releasing.md"
+grep -Fq 'DOCKERHUB_TOKEN' "$repo_dir/docs/releasing.md"
+grep -Fq 'docker buildx imagetools inspect' "$repo_dir/docs/releasing.md"
+! rg -qi 'expir' "$repo_dir/docs/releasing.md"
+! rg -q 'DOCKERHUB_TOKEN[[:space:]]*=' "$repo_dir/docs/releasing.md"
+! rg -q 'dckr_pat_[[:alnum:]_-]+' "$repo_dir/docs/releasing.md"
+
+grep -Fq 'Private vulnerability reporting' "$repo_dir/SECURITY.md"
+grep -Fq 'security/advisories/new' "$repo_dir/SECURITY.md"
+grep -Fq 'trusted local network' "$repo_dir/SECURITY.md"
+grep -Fq 'bash tests/run.sh' "$repo_dir/CONTRIBUTING.md"
+grep -Fq 'data/' "$repo_dir/CONTRIBUTING.md"
+grep -Fq 'SECURITY.md' "$repo_dir/CONTRIBUTING.md"
+
+grep -Fq '## License' "$repo_dir/README.md"
+grep -Fq 'GPL-3.0-only' "$repo_dir/README.md"
+grep -Fq 'LICENSE' "$repo_dir/README.md"
+grep -Fq 'THIRD_PARTY_NOTICES.md' "$repo_dir/README.md"
+
+[[ ! -e "$repo_dir/docs/superpowers" ]]
+if rg -n 'docs/superpowers|Superpowers|implementation plans|design history' \
+  "$repo_dir/AGENTS.md" "$repo_dir/README.md" "$repo_dir/docs"; then
+  echo 'Internal planning documentation is still referenced' >&2
+  exit 1
+fi
+
+for file in AGENTS.md CONTRIBUTING.md SECURITY.md; do
+  grep -Fxq "$file" "$repo_dir/.dockerignore"
+done
+
 ui_screenshot="$repo_dir/docs/images/gdownloader-ui.png"
 ui_screenshot_url='https://raw.githubusercontent.com/majindageta/gdownloader-docker/main/docs/images/gdownloader-ui.png'
 [[ -s "$ui_screenshot" ]]

@@ -15,7 +15,10 @@ The original GDownloader Swing interface is available directly in a browser thro
 - [Architecture](docs/architecture.md): build, startup, GUI, persistence, and system boundaries.
 - [Glossary](docs/glossary.md): canonical vocabulary used in the repository.
 - [Maintenance](docs/maintenance.md): component updates, checksums, tests, deployment, and rollback.
+- [Releasing](docs/releasing.md): maintainer credentials, release publication, verification, and token replacement.
 - [End-to-end verification](docs/verification.md): evidence collected for the current image.
+- [Contributing](CONTRIBUTING.md): development workflow and repository hygiene.
+- [Security policy](SECURITY.md): supported version and private vulnerability reporting.
 
 Agents modifying the repository must start with [AGENTS.md](AGENTS.md).
 
@@ -134,12 +137,9 @@ The absence of automatic updates is an intentional limitation of the first versi
 
 This section is for repository maintainers. GitHub Actions publishes an image only when a GitHub Release is published. The release tag must exactly match the version in `versions.env`: `GDOWNLOADER_VERSION=1.7.8` and `CONTAINER_REVISION=2` require GitHub tag `v1.7.8-2`.
 
-Configure these repository settings under **Settings → Secrets and variables → Actions** before the first release:
+The repository requires GitHub Actions variable `DOCKERHUB_USERNAME` and secret `DOCKERHUB_TOKEN`. Use a dedicated Docker Hub token with Read & Write permission and never commit or print it. The complete credential setup, release sequence, publication checks, and replacement procedure are documented in [Releasing](docs/releasing.md).
 
-- variable `DOCKERHUB_USERNAME` with value `majindageta`;
-- secret `DOCKERHUB_TOKEN` containing a dedicated Docker Hub access token with Read & Write permission.
-
-Never commit the Docker Hub token or place it in a workflow file. After the complete test suite passes and the changes are on `main`, publish the matching GitHub Release. The workflow tests the built image before authenticating and then publishes both `majindageta/gdownloader-docker:1.7.8-2` and `majindageta/gdownloader-docker:latest`.
+After the complete test suite passes and the changes are on `main`, publish the matching GitHub Release. The workflow tests the built image before authenticating and then publishes both `majindageta/gdownloader-docker:1.7.8-2` and `majindageta/gdownloader-docker:latest`.
 
 ## Security
 
@@ -161,4 +161,8 @@ This configuration is intended for exposure **only on a trusted local network**.
 - [FFmpeg](https://ffmpeg.org/)
 - [jlesage/baseimage-gui](https://github.com/jlesage/docker-baseimage-gui)
 
-License and redistribution information is available in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). GDownloader is an upstream project by hstr0100; this Docker packaging is neither affiliated with nor supported by the original project.
+## License
+
+The Docker packaging in this repository is distributed under the [GNU General Public License v3.0](LICENSE), identified as `GPL-3.0-only`. Redistributed applications and dependencies retain their respective licenses and attribution requirements, which are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+GDownloader is an upstream project by hstr0100. This repository is an unofficial packaging project and is neither affiliated with nor supported by the original project.

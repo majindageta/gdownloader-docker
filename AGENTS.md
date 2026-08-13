@@ -11,10 +11,9 @@ This repository builds an unofficial, fixed, and reproducible Docker image for G
 | Build, runtime, mount, or GUI changes | `docs/architecture.md` |
 | Terminology or component names | `docs/glossary.md` |
 | Updating GDownloader or dependencies | `docs/maintenance.md` |
+| Publishing a stable release or configuring credentials | `docs/releasing.md` |
 | Evidence for the current image | `docs/verification.md` |
 | Docker or Portainer installation | `README.md` |
-
-The specifications and plans under `docs/superpowers/` describe the project's design history. They do not replace the operational documents listed above.
 
 ## Non-Negotiable Constraints
 
@@ -41,6 +40,7 @@ ARM support, in-container automatic updates, integrated authentication, new down
 - `rootfs/usr/local/lib/gdownloader/bootstrap.sh`: state preparation.
 - `rootfs/startapp.sh`: GUI startup.
 - `compose.yaml`: minimal deployment contract.
+- `docs/releasing.md`: release publication and credential procedure.
 - `tests/` and `docs/verification.md`: verified behavior.
 - `LICENSE` and `THIRD_PARTY_NOTICES.md`: licenses for distributed components.
 
