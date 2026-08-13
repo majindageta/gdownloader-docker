@@ -4,6 +4,12 @@ Unofficial Docker image for [GDownloader](https://github.com/hstr0100/GDownloade
 
 This is a *fixed* image: the application and dependencies are updated by rebuilding and recreating the image. GDownloader does not update itself automatically inside the container.
 
+## Interface Preview
+
+![GDownloader graphical interface](https://raw.githubusercontent.com/majindageta/gdownloader-docker/main/docs/images/gdownloader-ui.png)
+
+The original GDownloader Swing interface is available directly in a browser through noVNC.
+
 ## Project Documentation
 
 - [Architecture](docs/architecture.md): build, startup, GUI, persistence, and system boundaries.

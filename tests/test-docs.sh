@@ -15,6 +15,13 @@ grep -Fq 'v1.7.8-2' "$repo_dir/README.md"
 grep -Fq 'DOCKERHUB_TOKEN' "$repo_dir/README.md"
 grep -Fq 'DOCKERHUB_USERNAME' "$repo_dir/README.md"
 grep -F 'trusted local network' "$repo_dir/README.md"
+
+ui_screenshot="$repo_dir/docs/images/gdownloader-ui.png"
+ui_screenshot_url='https://raw.githubusercontent.com/majindageta/gdownloader-docker/main/docs/images/gdownloader-ui.png'
+[[ -s "$ui_screenshot" ]]
+[[ $(od -An -tx1 -N8 "$ui_screenshot" | tr -d ' \n') == 89504e470d0a1a0a ]]
+grep -Fq '## Interface Preview' "$repo_dir/README.md"
+grep -Fq "![GDownloader graphical interface]($ui_screenshot_url)" "$repo_dir/README.md"
 grep -F 'Portainer' "$repo_dir/README.md"
 grep -F 'manual update' "$repo_dir/README.md"
 for name in GDownloader yt-dlp Deno FFmpeg; do
