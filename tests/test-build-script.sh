@@ -5,7 +5,7 @@ repo_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 output=$("$repo_dir/scripts/build.sh" --dry-run)
 
 grep -Fq -- '--platform linux/amd64' <<<"$output"
-grep -Fq -- '--tag gdownloader-docker:1.7.8-1' <<<"$output"
+grep -Fq -- '--tag gdownloader-docker:1.7.8-2' <<<"$output"
 grep -Fq -- '--build-arg BASE_IMAGE=jlesage/baseimage-gui:ubuntu-24.04-v4.12.6' <<<"$output"
 grep -Fq -- '--build-arg GDOWNLOADER_VERSION=1.7.8' <<<"$output"
 grep -Fq -- '--build-arg YTDLP_VERSION=2026.07.04' <<<"$output"

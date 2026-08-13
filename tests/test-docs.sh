@@ -8,10 +8,10 @@ grep -F '5800:5800' "$repo_dir/compose.yaml"
 grep -F '/config' "$repo_dir/compose.yaml"
 grep -F '/output' "$repo_dir/compose.yaml"
 ! grep -F '5900:' "$repo_dir/compose.yaml"
-public_image='majindageta/gdownloader-docker:1.7.8-1'
+public_image='majindageta/gdownloader-docker:1.7.8-2'
 grep -Fq "image: $public_image" "$repo_dir/compose.yaml"
 grep -Fq "$public_image" "$repo_dir/README.md"
-grep -Fq 'v1.7.8-1' "$repo_dir/README.md"
+grep -Fq 'v1.7.8-2' "$repo_dir/README.md"
 grep -Fq 'DOCKERHUB_TOKEN' "$repo_dir/README.md"
 grep -Fq 'DOCKERHUB_USERNAME' "$repo_dir/README.md"
 grep -F 'trusted local network' "$repo_dir/README.md"

@@ -1,13 +1,13 @@
 # End-to-End Verification
 
-Verification date: August 11, 2026.
+Verification date: August 13, 2026.
 
 ## Environment
 
 - Host: macOS `arm64` with Docker Desktop.
 - Docker client/server: `20.10.22/arm64`.
-- Verified image: `gdownloader-docker:1.7.8-1`.
-- Image ID: `sha256:585cae5dfaec8a42d46351e0e28bb0a20298a93c25ec71a1e50b3a5928e79f8b`.
+- Verified image: `gdownloader-docker:1.7.8-2`.
+- Image ID: `sha256:e94fa49eefb8f01198e6c15f02fb7d3f439c11c3b7882576f157d40ed0ba5274`.
 - Image-declared architecture: `amd64`.
 - Architecture observed in the container: `x86_64` (Docker Desktop emulation).
 - Configured health check: HTTP request to `127.0.0.1:5800`, 30 s interval, 5 s timeout, 3 retries, 30 s start period.
@@ -91,7 +91,7 @@ curl -fsS http://127.0.0.1:5800/
 docker inspect gdownloader-verification --format '{{.State.Health.Status}}'
 docker exec gdownloader-verification jq -e . /config/config.json
 docker exec gdownloader-verification /opt/base/sbin/su-exec app sh -c ': > /output/.recreate-write-test'
-docker image inspect gdownloader-docker:1.7.8-1
+docker image inspect gdownloader-docker:1.7.8-2
 python3 /tmp/gdownloader-vnc-clipboard-test.py
 docker exec -u app -e DISPLAY=:0 gdownloader-verification xclip -selection clipboard -t UTF8_STRING -o
 ```

@@ -19,7 +19,7 @@ The [`Dockerfile`](../Dockerfile) starts from the jlesage GUI base and installs 
 - verifies every downloaded artifact against the digest in `versions.env` before installation;
 - records the effective versions in `/opt/gdownloader/COMPONENTS`.
 
-Stable publication is separate from ordinary builds. Publishing a GitHub Release triggers [the Docker publishing workflow](../.github/workflows/publish-docker.yml). The workflow validates that a tag such as `v1.7.8-1` matches `versions.env`, builds and loads the `linux/amd64` image, runs the complete repository test suite, and only then authenticates to Docker Hub. A successful run pushes the matching versioned tag and updates `latest`; ordinary pushes to `main` publish nothing.
+Stable publication is separate from ordinary builds. Publishing a GitHub Release triggers [the Docker publishing workflow](../.github/workflows/publish-docker.yml). The workflow validates that a tag such as `v1.7.8-2` matches `versions.env`, builds and loads the `linux/amd64` image, runs the complete repository test suite, and only then authenticates to Docker Hub. A successful run pushes the matching versioned tag and updates `latest`; ordinary pushes to `main` publish nothing.
 
 The public image is `majindageta/gdownloader-docker`. OCI labels identify this packaging repository as the image source, while the upstream project and redistributed component origins remain documented in the README and third-party notices.
 

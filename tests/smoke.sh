@@ -10,8 +10,11 @@ readonly_name="gd-smoke-readonly-$$"
 tmp_dir=$(mktemp -d)
 
 cleanup() {
+  local status=$?
+  set +e
   docker rm -f "$name" "$readonly_name" >/dev/null 2>&1 || true
-  rm -rf "$tmp_dir"
+  bash "$repo_dir/tests/lib/cleanup-bind-mount.sh" "$image" "$tmp_dir" >/dev/null 2>&1
+  return "$status"
 }
 trap cleanup EXIT
 
